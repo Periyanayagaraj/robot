@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js Robot Model Head Rotation</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.129.0/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js';
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x333333); // Dark background
+    document.body.appendChild(renderer.domElement);
+
+    // Camera position
+    camera.position.set(-0.3, 0, 8);
+
+    // First Spotlight
+    const spotLight1 = new THREE.SpotLight(0xFFFFFF, 4.97);
+    spotLight1.position.set(-832.53, 610.16, -228.70);
+    spotLight1.rotation.set(THREE.MathUtils.degToRad(-6.54), THREE.MathUtils.degToRad(8.39), THREE.MathUtils.degToRad(-73.08));
+    spotLight1.distance = 1795;
+    spotLight1.angle = THREE.MathUtils.degToRad(47);
+    spotLight1.penumbra = 1;
+    spotLight1.decay = 1;
+    scene.add(spotLight1);
+
+    // Second Spotlight
+    const spotLight2 = new THREE.SpotLight(0xFF00D2, 2.64);
+    spotLight2.position.set(500, 200, 100);
+    spotLight2.rotation.set(THREE.MathUtils.degToRad(-30), THREE.MathUtils.degToRad(20), THREE.MathUtils.degToRad(0));
+    spotLight2.distance = 1500;
+    spotLight2.angle = THREE.MathUtils.degToRad(30);
+    spotLight2.penumbra = 0.9;
+    spotLight2.decay = 1;
+    scene.add(spotLight2);
+
+    let model, head; // Placeholders for the model and head
+
+    // Load the 3D model
+    const loader = new GLTFLoader();
+    loader.load(
+      '3d/robot.glb',  // Path to your 3D model
+      (gltf) => {
+        model = gltf.scene;
+        scene.add(model);
+        gltf.scene.rotation.x += 0.2;
+        gltf.scene.rotation.y += 0;
+        gltf.scene.rotation.z += 0.01;
+
+        // Find the head in the model by name
+        head = model.getObjectByName("Head"); // Update "Head" with the exact name of the head part in the model
+
+      },
+      undefined,
+      (error) => {
+        console.error('An error occurred while loading the model:', error);
+      }
+    );
+
+    // Mouse and touch movement tracking
+    let mouseX = 0;
+    let mouseY = 0;
+
+    function handleMouseMove(event) {
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(event.clientY / window.innerHeight) *  - 1;
+    }
+
+    function handleTouchMove(event) {
+      event.preventDefault();
+      
+      const touch = event.touches[0];
+      mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(touch.clientY / window.innerHeight) *  - 1;
+    }
+
+    // Event listeners for mouse and touch events
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    // Render loop with mouse and touch-based head rotation
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (head) {
+        head.rotation.y = mouseX * Math.PI / 4; // Adjusts rotation on y-axis
+        head.rotation.x = mouseY * Math.PI / 8; // Adjusts rotation on x-axis
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+
+</html>
